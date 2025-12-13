@@ -1,0 +1,2 @@
+chart/templates/*.yaml
+!chart/templates/*-test.yaml

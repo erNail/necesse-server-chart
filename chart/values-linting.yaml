@@ -1,0 +1,30 @@
+---
+replicaCount: 2
+
+autoscaling:
+  enabled: true
+
+volumeConfig:
+  data:
+    persistence:
+      enabled: true
+
+ingress:
+  enabled: true
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+
+podDisruptionBudget:
+  enabled: true
+
+hostPodAntiAffinity:
+  enabled: true
+
+serviceAccount:
+  enabled: true
+
+service:
+  enableAdditionalHeadlessService: true

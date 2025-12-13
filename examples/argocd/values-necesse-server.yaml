@@ -1,0 +1,19 @@
+resources:
+  requests:
+    cpu: "100m"
+    memory: "512Mi"
+    ephemeral-storage: "128Mi"
+  limits:
+    cpu: "100m"
+    memory: "512Mi"
+    ephemeral-storage: "128Mi"
+
+volumeConfig:
+  data:
+    persistence:
+      enabled: true
+      size: "1Gi"
+      storageClass: "longhorn"
+
+service:
+  type: "LoadBalancer"

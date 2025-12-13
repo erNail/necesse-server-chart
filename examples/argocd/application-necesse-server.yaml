@@ -1,0 +1,29 @@
+---
+apiVersion: "argoproj.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: "neccesse-server"
+  namespace: "argocd"
+spec:
+  project: "default"
+  sources:
+    - repoURL: "https://github.com/erNail/necesse-server-chart"
+      targetRevision: "feat/add-chart"
+      path: "examples/argocd"
+      ref: "values"
+    - repoURL: "https://github.com/erNail/necesse-server-chart"
+      targetRevision: "feat/add-chart"
+      path: "chart"
+      helm:
+        releaseName: "necesse-server"
+        valueFiles:
+          - "$values/examples/argocd/values-necesse-server.yaml"
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: "necesse-server"
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - "CreateNamespace=true"

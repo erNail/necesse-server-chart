@@ -1,0 +1,458 @@
+---
+# -- The api versions of the resources created by this chart.
+#
+# Ref: https://kubernetes.io/docs/reference/using-api/deprecation-guide/
+apiVersions:
+  deployment: "apps/v1"
+  persistentVolumeClaim: "v1"
+  service: "v1"
+  serviceAccount: "v1"
+  configMap: "v1"
+  statefulSet: "apps/v1"
+
+# -- Use this to override the name of the chart.
+nameOverride: ""
+
+# -- Use this to override the fullname of the chart.
+fullnameOverride: ""
+
+# -- Use this to override the namespace of the chart.
+# By default, `.Release.Namespace` is used.
+namespaceOverride: ""
+
+# -- The number of replicas of the pod.
+# Necesse doesn't support running multiple replicas. Increase this value at your own risk.
+#
+# Ref: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+replicaCount: 1
+
+# -- The image of the container.
+#
+# Ref: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  # -- The repository/name/url of the image.
+  repository: "ghcr.io/ernail/necesse-server"
+  # -- The pull policy for the image.
+  pullPolicy: "Always"
+  # -- The tag of the image. If not set, the chart's `appVersion` is used.
+  tag: ""
+
+# -- Secrets for pulling an image from a private repository.
+#
+# Ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+
+# -- Annotations to add to the pod(s).
+#
+# Ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
+
+# -- Extra labels to add to the pod(s).
+#
+# Ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+extraPodLabels: {}
+
+# -- Resource limits and requests.
+# You might want to set `limits.cpu` to `null`: https://home.robusta.dev/blog/stop-using-cpu-limits
+#
+# Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+resources:
+  requests:
+    cpu: "100m"
+    memory: "512Mi"
+    ephemeral-storage: "128Mi"
+  limits:
+    cpu: "100m"
+    memory: "512Mi"
+    ephemeral-storage: "128Mi"
+
+# -- The security context for the pod.
+#
+# Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+podSecurityContext:
+  fsGroup: 10001
+
+# -- The security context for the container.
+#
+# Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+  runAsUser: 10001
+  runAsGroup: 10001
+
+# -- The node selector for the pod(s).
+#
+# Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+nodeSelector: {}
+
+# -- The affinity for the pod(s).
+#
+# Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+affinity: {}
+
+# -- A host podAntiAffinity, that stops multiple pods from from being scheduled on the same node.
+#
+# Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+hostPodAntiAffinity:
+  # -- Whether to enable the host podAntiAffinity.
+  enabled: false
+  # -- The weight of the host podAntiAffinity.
+  weight: 50
+
+# -- The tolerations for the pod(s).
+#
+# Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+tolerations: {}
+
+# -- Liveness Probe configuration.
+# Liveness probes can be dangerous. Only use them if you really need one.
+# See https://srcco.de/posts/kubernetes-liveness-probes-are-dangerous.html for more information.
+#
+# Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+livenessProbe: {}
+  # httpGet:
+  #   # -- The path to use for the liveness probe.
+  #   path: "/live"
+  #   # -- The port to use for the liveness probe.
+  #   # This should reference the container ports defined at `.Values.containerPorts`.
+  #   port: "http"
+
+# -- Readiness Probe configuration.
+#
+# Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+readinessProbe:
+  exec:
+    command:
+      - "pgrep"
+      - "-f"
+      - "Server.jar"
+
+# -- Deployment strategy configuration.
+#
+# Ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+strategy:
+  type: "RollingUpdate"
+
+# -- ConfigMap configuration.
+#
+# Ref: https://kubernetes.io/docs/concepts/configuration/configmap/
+configMap:
+  # -- Whether to create a ConfigMap resource.
+  enabled: true
+  # -- The name of the ConfigMap.
+  # The name should reference the ConfigMap name at `.Values.volumeConfig`.
+  name: "config"
+  # -- Annotations to add to the ConfigMap.
+  annotations: {}
+  # -- The data to add to the ConfigMap.
+  # The `server.cfg` needs to be created as a secret, since it can contain sensitive information like passwords.
+  # Check the `examples` directory for an example of an encrypted `server.cfg` Secret.
+  data:
+    settings.cfg: >-
+      SETTINGS = {
+        GENERAL = {
+          sceneSize = 1.25, // [1.0 - 4.0] Higher = more zoomed in
+          adjustZoomOnHighResolution = true,
+          limitCameraToLevelBounds = true,
+          pauseOnFocusLoss = true,
+          savePerformanceOnFocusLoss = true,
+          alwaysSkipTutorial = false,
+          showSettlerHeadArmor = true,
+          useTileObjectHitboxes = false,
+          loadLevelBeforeSpawn = false,
+          smartMining = false,
+          craftingUseNearby = true,
+          minimapHidden = false,
+          menuCameraPan = true,
+          minimapZoomLevel = 3,
+          islandMapZoomLevel = 3,
+          show1p0Notice = true,
+          showSteamDeckCursorNotice = true,
+          patchNotesOpenYear = 2000,
+          patchNotesOpenMonth = 1,
+          patchNotesOpenDay = 1,
+          unloadLevelsCooldown = 30,
+          worldBorderSize = -1,
+          droppedItemsLifeMinutes = 0,
+          unloadSettlements = false,
+          maxSettlementsPerPlayer = -1,
+          maxSettlersPerSettlement = -1,
+          zipSaves = true,
+          language = en
+        },
+        CONTROLS = {
+          cursorJoystickSensitivity = 1.0,
+          mouse1 = -100,
+          mouse2 = -99,
+          moveup = 87,
+          moveleft = 65,
+          movedown = 83,
+          moveright = 68,
+          movetomouse = -1,
+          inventory = 69,
+          healthpotion = 81,
+          manapotion = 90,
+          eatfood = -1,
+          pipette = -98,
+          eraser = 71,
+          scoreboard = 258,
+          showmap = 77,
+          zoomin = 334,
+          zoomout = 333,
+          hidecursor = 292,
+          hideui = 293,
+          screenshot = 294,
+          debuginfo = 290,
+          debughud = 291,
+          buffpotions = 66,
+          placetorch = 82,
+          expressionwheel = 84,
+          usemount = 70,
+          setability = 86,
+          trinketability = 32,
+          openadventureparty = 88,
+          openadventurejournal = 74,
+          opensettlement = 67,
+          smartmining = 341,
+          lootall = -1,
+          sortinventory = -1,
+          quickstack = -1,
+          nexthotbar = -102,
+          prevhotbar = -103,
+          hotbarslot0 = 49,
+          hotbarslot1 = 50,
+          hotbarslot2 = 51,
+          hotbarslot3 = 52,
+          hotbarslot4 = 53,
+          hotbarslot5 = 54,
+          hotbarslot6 = 55,
+          hotbarslot7 = 56,
+          hotbarslot8 = 57,
+          hotbarslot9 = 48,
+          itemset0 = -1,
+          itemset1 = -1,
+          itemset2 = -1,
+          itemset3 = -1,
+          invlock = 342,
+          invquickmove = 340,
+          invtrash = 341,
+          invdrop = -1,
+          craft10 = 340,
+          craftall = -1
+        },
+        INTERFACE = {
+          interfaceSize = 1.0, // [1.0 - 2.0] Higher = bigger
+          interfaceStyle = primal,
+          adjustInterfaceOnHighResolution = true,
+          sharpenInterface = true,
+          pixelFont = false,
+          showDebugInfo = false,
+          showQuestMarkers = true,
+          showTeammateMarkers = true,
+          showPickupText = true,
+          showDamageText = true,
+          showDoTText = true,
+          showMobHealthBars = true,
+          showBossHealthBars = true,
+          showBasicTooltipBackground = false,
+          showItemTooltipBackground = true,
+          showControlTips = true,
+          showLogicGateTooltips = false,
+          showIngredientsAvailable = true,
+          alwaysShowQuickbar = false,
+          tooltipTextSize = 16,
+          drawCursorManually = true,
+          cursorColor = [255, 255, 255, 255],
+          cursorSize = 0,
+          trackNewQuests = true,
+          displayJournalNotifications = true,
+          craftingFilterExpanded = false,
+          craftingListExpanded = true,
+          craftingListShowHidden = false,
+          craftingListOnlyCraftable = false,
+          highlightNewRecipesToWorkstation = true,
+          hideSettlementStorage = false,
+          hideSettlementWorkstations = false,
+          hideSettlementForestryZones = false,
+          hideSettlementHusbandryZones = false,
+          hideSettlementFertilizeZones = false,
+          mapCoordinates = RELATIVE_SELF
+        },
+        SOUND = {
+          masterVolume = 50, // [0 - 100]
+          effectsVolume = 100, // [0 - 100]
+          weatherVolume = 20, // [0 - 100]
+          UIVolume = 100, // [0 - 100]
+          musicVolume = 50, // [0 - 100]
+          muteOnFocusLoss = false
+        },
+        GRAPHICS = {
+          displayMode = Borderless, // Windowed, Borderless, Fullscreen
+          monitor = 0,
+          vSyncEnabled = true,
+          maxFPS = 0, // 0 = uncapped
+          reduceUIFramerate = true,
+          sceneColors = Vibrant, // Normal, Vibrant
+          brightness = 1.0,
+          smoothLighting = true,
+          lights = Color, // Color, White
+          particles = Maximum, // Minimal, Decreased, Maximum
+          wavyGrass = true,
+          denseGrass = true,
+          windeffects = true,
+          cameraShake = true
+        }
+      }
+    banned.cfg: ""
+    auth: ""
+
+# -- Configures the pods `volumes` and `volumeMounts`, as well as the Persistent Volume Claims
+#
+# Ref: https://kubernetes.io/docs/concepts/storage/volumes/
+volumeConfig:
+  data:
+    # -- Will be added to the pods `volumeMounts`.
+    volumeMount:
+      name: "data"
+      mountPath: "/.config/Necesse"
+    # -- Will be added to the pods `volumes` if `persistence.enabled` is `false`.
+    volume:
+      name: "data"
+      emptyDir: {}
+    # -- Persistent Volume Claim configuration
+    persistence:
+      enabled: false
+      pvcName: "data"
+      annotations: {}
+      accessModes:
+        - "ReadWriteOnce"
+      size: "1Gi"
+      storageClass: ""
+      # -- Will be added to the pods `volumes` if `persistence.enabled` is `true`.
+      volume:
+        name: "data"
+        persistentVolumeClaim:
+          claimName: "data"
+  cfg:
+    # -- Will be added to the pods `volumeMounts`.
+    volumeMount:
+      name: "cfg"
+      mountPath: "/.config/Necesse/cfg"
+    # -- Will be added to the pods `volumes`
+    volume:
+      name: "cfg"
+      emptyDir: {}
+  serverConfig:
+    # -- Will be added to the pods `volumeMounts`.
+    volumeMount:
+      name: "server-config"
+      mountPath: "/.config/Necesse/cfg/server.cfg"
+      subPath: "server.cfg"
+    # -- Will be added to the pods `volumes` if `persistence.enabled` is `false`.
+    volume:
+      name: "server-config"
+      secret:
+        secretName: "necesse-server-config"
+  settingsConfig:
+    # -- Will be added to the pods `volumeMounts`.
+    volumeMount:
+      name: "settings-config"
+      mountPath: "/.config/Necesse/cfg/settings.cfg"
+      subPath: "settings.cfg"
+    # -- Will be added to the pods `volumes`
+    volume:
+      name: "settings-config"
+      configMap:
+        name: "config"
+        items:
+          - key: "settings.cfg"
+            path: "settings.cfg"
+  bannedConfig:
+    # -- Will be added to the pods `volumeMounts`.
+    volumeMount:
+      name: "banned-config"
+      mountPath: "/.config/Necesse/cfg/banned.cfg"
+      subPath: "banned.cfg"
+    # -- Will be added to the pods `volumes`
+    volume:
+      name: "banned-config"
+      configMap:
+        name: "config"
+        items:
+          - key: "banned.cfg"
+            path: "banned.cfg"
+
+# -- Configuration for service accounts.
+#
+# Ref: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # -- Whether a service account should be created.
+  enabled: true
+  # -- Whether to mount a ServiceAccount's API credentials.
+  automount: true
+  # -- Annotations to add to the service account.
+  annotations: {}
+  # -- The name of the service account to use.
+  # If not set, a name is generated based on the chart name.
+  name: ""
+
+# -- The ports of the container.
+# To use these ports in the service(s),
+# you need to add them to `.Values.service.ports` or `.Values.metrics.service.ports`.
+#
+# If `.Values.livenessProbe.enabled` is true, you need to add them to `.Values.livenessProbe`.
+#
+# If `.Values.readinessProbe.enabled` is true, you need to add them to `.Values.readinessProbe`.
+#
+# Ref: https://kubernetes.io/docs/concepts/services-networking/service/
+#
+# Ref: https://kubernetes.io/docs/concepts/services-networking/network-policies/
+containerPorts:
+  - name: "server"
+    port: 14159
+    protocol: "UDP"
+
+# -- Service configuration.
+# A service for metrics is created separately. Check `.Values.metrics` for more information.
+#
+# Ref: https://kubernetes.io/docs/concepts/services-networking/service/
+service:
+  # -- The type of service to create.
+  #
+  # Ref: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  type: "ClusterIP"
+  # -- The ports of the service.
+  # These should reference the container ports defined at `.Values.containerPorts`.
+  # When `.Values.ingress.enabled` is `true`, they should reference `.Values.ingress.hosts`.
+  #
+  # Ref: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
+  ports:
+    - name: "server"
+      port: 14159
+      protocol: "UDP"
+      targetPort: "server"
+
+# -- App configuration.
+app:
+  # -- Environment variables to pass to the container.
+  #
+  # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
+  env:
+    - name: "JAVA_TOOL_OPTIONS"
+      value: >-
+        -XX:+UnlockExperimentalVMOptions
+        -XX:+UseG1GC 
+        -XX:+ExplicitGCInvokesConcurrent 
+        -XX:G1NewSizePercent=20 
+        -XX:G1ReservePercent=20 
+        -XX:MaxGCPauseMillis=50 
+        -XX:G1HeapRegionSize=32M
+        -Xms256m
+        -Xmx256m
+    
+  # -- Arguments to pass to the containers entrypoint.
+  #
+  # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/
+  args:
+    - "-world"
+    - "MyWorld"

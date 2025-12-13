@@ -1,0 +1,25 @@
+---
+apiVersion: "v2"
+name: "necesse-server"
+description: "A lightweight Helm chart for hosting Necesse servers that prioritizes transparency and flexibility."
+type: "application"
+icon: ""
+keywords:
+  - "necesse"
+  - "game-server"
+  - "helm-chart"
+  - "kubernetes"
+  - "k8s"
+maintainers:
+  - name: "ernail"
+    email: "nagel.eric.95@googlemail.com"
+annotations:
+  artifacthub.io/license: "MIT"
+  artifacthub.io/links: |
+    - name: source
+      url: https://github.com/erNail/necesse-server-chart
+    - name: support
+      url: https://github.com/erNail/necesse-server-chart/issues
+version: "0.0.0"
+# renovate: image=ghcr.io/ernail/necesse-server
+appVersion: "1.0.0-rc20197724461"
