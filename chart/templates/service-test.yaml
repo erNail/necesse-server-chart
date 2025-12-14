@@ -41,10 +41,10 @@ tests:
       - equal:
           path: "spec.ports"
           value:
-            - name: "http"
-              port: 80
-              targetPort: "http"
-              protocol: "TCP"
+            - name: "server"
+              port: 14159
+              targetPort: "server"
+              protocol: "UDP"
 
   - it: "should render ports as set"
     set:

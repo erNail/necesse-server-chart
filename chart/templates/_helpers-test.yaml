@@ -166,17 +166,3 @@ tests:
           path: "metadata.name"
           value: "default"
 ---
-suite: "helpers fullnameSuffix"
-templates:
-  - "service-metrics.yaml"
-tests:
-  - it: "should render fullname with suffix '-metrics'"
-    release:
-      name: "testrel"
-    set:
-      metrics:
-        enabled: true
-    asserts:
-      - equal:
-          path: "metadata.name"
-          value: "testrel-necesse-server-metrics"

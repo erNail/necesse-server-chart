@@ -70,20 +70,14 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.volumeMounts }}
           volumeMounts:
-            {{- range $key, $config := .Values.volumeConfig }}
-            {{- if $config.volumeMount }}
-            - {{- toYaml $config.volumeMount | nindent 14 }}
-            {{- end }}
-            {{- end }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.volumes }}
       volumes:
-        {{- range $key, $config := .Values.volumeConfig }}
-        {{- if and $config.persistence $config.persistence.enabled $config.persistence.volume }}
-        - {{- toYaml $config.persistence.volume | nindent 10 }}
-        {{- else if $config.volume }}
-        - {{- toYaml $config.volume | nindent 10 }}
-        {{- end }}
-        {{- end }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

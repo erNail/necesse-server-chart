@@ -1,24 +1,24 @@
-{{- range $key, $config := .Values.volumeConfig }}
-{{- if and $config.persistence $config.persistence.enabled }}
+{{- range $key, $pvc := .Values.persistentVolumeClaims }}
+{{- if $pvc.enabled }}
 ---
 kind: "PersistentVolumeClaim"
 apiVersion: {{ $.Values.apiVersions.persistentVolumeClaim | quote }}
 metadata:
-  name: {{ $config.persistence.pvcName | quote }}
+  name: {{ $pvc.pvcName | quote }}
   namespace: {{ include "names.namespace" $ | quote }}
   labels:
     {{- include "labels.commonLabels" $ | nindent 4 }}
-  {{- with $config.persistence.annotations }}
+  {{- with $pvc.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
   accessModes:
-    {{ toYaml $config.persistence.accessModes | nindent 4 }}
+    {{- toYaml $pvc.accessModes | nindent 4 }}
   resources:
     requests:
-      storage: {{ $config.persistence.size | quote }}
-  storageClassName: {{ $config.persistence.storageClass | quote }}
+      storage: {{ $pvc.size | quote }}
+  storageClassName: {{ $pvc.storageClass | quote }}
 ...
 {{- end }}
 {{- end }}

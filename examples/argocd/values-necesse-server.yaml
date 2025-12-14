@@ -1,19 +1,28 @@
+---
 resources:
   requests:
     cpu: "100m"
-    memory: "512Mi"
+    memory: "1024Mi"
     ephemeral-storage: "128Mi"
   limits:
-    cpu: "100m"
-    memory: "512Mi"
+    cpu: "1000m"
+    memory: "1024Mi"
     ephemeral-storage: "128Mi"
 
-volumeConfig:
+volumes:
+  - name: "data"
+    persistentVolumeClaim:
+      claimName: "data"
+  - name: "server-config"
+    secret:
+      # The name of the secret containing the `server.cfg` file.
+      secretName: "necesse-server-config"
+
+persistentVolumeClaims:
   data:
-    persistence:
-      enabled: true
-      size: "1Gi"
-      storageClass: "longhorn"
+    enabled: true
+    size: "1Gi"
+    storageClass: "longhorn"
 
 service:
   type: "LoadBalancer"

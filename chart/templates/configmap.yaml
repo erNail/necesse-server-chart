@@ -15,6 +15,6 @@ data:
   {{- range $key, $value := .Values.configMap.data }}
   {{ $key }}: |
     {{- $value | nindent 4 }}
-  {{- end }}
+  {{- end -}}
 ...
 {{- end }}

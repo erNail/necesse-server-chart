@@ -18,27 +18,6 @@ tests:
           path: "apiVersion"
           value: "apps/v2"
 
-  - it: "should render replicas with default value"
-    asserts:
-      - exists:
-          path: "spec.replicas"
-
-  - it: "should render replicas if autoscaling is disabled"
-    set:
-      autoscaling:
-        enabled: false
-    asserts:
-      - exists:
-          path: "spec.replicas"
-
-  - it: "should not render replicas if autoscaling is enabled"
-    set:
-      autoscaling:
-        enabled: true
-    asserts:
-      - notExists:
-          path: "spec.replicas"
-
   - it: "should render default replicaCount"
     asserts:
       - equal:
@@ -136,10 +115,12 @@ tests:
           value:
             - name: "myregistrykey"
 
-  - it: "should not render podSecurityContext with default value"
+  - it: "should render podSecurityContext with default value"
     asserts:
-      - notExists:
+      - equal:
           path: "spec.template.spec.securityContext"
+          value:
+            fsGroup: 10001
 
   - it: "should render podSecurityContext as set"
     set:
@@ -159,11 +140,6 @@ tests:
           path: "spec.template.spec.containers[0].name"
           value: "necesse-server"
 
-  - it: "should not render container env with default value"
-    asserts:
-      - notExists:
-          path: "spec.template.spec.containers[0].env"
-
   - it: "should render container env as set"
     set:
       app:
@@ -177,10 +153,13 @@ tests:
             - name: "ENV_VAR"
               value: "value"
 
-  - it: "should not render container args with default value"
+  - it: "should render container args with default value"
     asserts:
-      - notExists:
+      - equal:
           path: "spec.template.spec.containers[0].args"
+          value:
+            - "-world"
+            - "MyWorld"
 
   - it: "should render container args as set"
     set:
@@ -222,7 +201,7 @@ tests:
     asserts:
       - equal:
           path: "spec.template.spec.containers[0].image"
-          value: "necesse-server:0.0.0"
+          value: "ghcr.io/ernail/necesse-server:0.0.0"
 
   - it: "should render image with set values"
     set:
@@ -254,12 +233,9 @@ tests:
       - equal:
           path: "spec.template.spec.containers[0].ports"
           value:
-            - name: "http"
-              containerPort: 80
-              protocol: "TCP"
-            - name: "metrics"
-              containerPort: 3000
-              protocol: "TCP"
+            - name: "server"
+              containerPort: 14159
+              protocol: "UDP"
 
   - it: "should render container ports as set"
     set:
@@ -305,13 +281,16 @@ tests:
       - equal:
           path: "spec.template.spec.containers[0].readinessProbe"
           value:
-            httpGet:
-              path: "/ready"
-              port: "http"
+            exec:
+              command:
+                - "pgrep"
+                - "-f"
+                - "Server.jar"
 
   - it: "should render readinessProbe as set"
     set:
       readinessProbe:
+        exec: null
         httpGet:
           path: "/healthz"
           port: "http"
@@ -331,11 +310,11 @@ tests:
             limits:
               cpu: "100m"
               ephemeral-storage: "128Mi"
-              memory: "128Mi"
+              memory: "512Mi"
             requests:
               cpu: "100m"
               ephemeral-storage: "128Mi"
-              memory: "128Mi"
+              memory: "512Mi"
 
   - it: "should render resources as set"
     set:
@@ -367,17 +346,26 @@ tests:
           path: "spec.template.spec.containers[0].volumeMounts"
           value:
             - name: "data"
-              mountPath: "/app/data"
+              mountPath: "/.config/Necesse"
+            - name: "data"
+              mountPath: "/.config/Necesse/cfg"
+              subPath: "cfg"
+            - name: "server-config"
+              mountPath: "/.config/Necesse/cfg/server.cfg"
+              subPath: "server.cfg"
+            - name: "settings-config"
+              mountPath: "/.config/Necesse/cfg/settings.cfg"
+              subPath: "settings.cfg"
+            - name: "banned-config"
+              mountPath: "/.config/Necesse/cfg/banned.cfg"
+              subPath: "banned.cfg"
 
   - it: "should render volumeMounts as set"
     set:
-      volumeConfig:
-        data: null
-        foo:
-          volumeMount:
-            name: "foo"
-            mountPath: "/etc/foo"
-            readOnly: true
+      volumeMounts:
+        - name: "foo"
+          mountPath: "/etc/foo"
+          readOnly: true
     asserts:
       - equal:
           path: "spec.template.spec.containers[0].volumeMounts"
@@ -386,71 +374,28 @@ tests:
               mountPath: "/etc/foo"
               readOnly: true
 
-  - it: "should render non-persistence volumes with default value"
+  - it: "should render volumes with default value"
     asserts:
       - equal:
           path: "spec.template.spec.volumes"
           value:
             - name: "data"
               emptyDir: {}
-
-  - it: "should render persistence volumes with default value"
-    set:
-      volumeConfig:
-        data:
-          persistence:
-            enabled: true
-    asserts:
-      - equal:
-          path: "spec.template.spec.volumes"
-          value:
-            - name: "data"
-              persistentVolumeClaim:
-                claimName: "data"
-
-  - it: "should render non-persistence volumes as set"
-    set:
-      volumeConfig:
-        data: null
-        foo:
-          volume:
-            name: "foo"
-            secret:
-              secretName: "mysecret"
-              optional: false
-          persistence:
-            enabled: false
-            volume:
-              name: "should-not-be-used"
-    asserts:
-      - equal:
-          path: "spec.template.spec.volumes"
-          value:
-            - name: "foo"
+            - name: "server-config"
               secret:
-                secretName: "mysecret"
-                optional: false
-
-  - it: "should render persistence volumes as set"
-    set:
-      volumeConfig:
-        data: null
-        foo:
-          volume:
-            name: "should-not-be-used"
-          persistence:
-            enabled: true
-            volume:
-              name: "foo-persistent-volume"
-              persistentVolumeClaim:
-                claimName: "foo-pvc"
-    asserts:
-      - equal:
-          path: "spec.template.spec.volumes"
-          value:
-            - name: "foo-persistent-volume"
-              persistentVolumeClaim:
-                claimName: "foo-pvc"
+                secretName: "necesse-server-config"
+            - name: "settings-config"
+              configMap:
+                name: "config"
+                items:
+                  - key: "settings.cfg"
+                    path: "settings.cfg"
+            - name: "banned-config"
+              configMap:
+                name: "config"
+                items:
+                  - key: "banned.cfg"
+                    path: "banned.cfg"
 
   - it: "should not render nodeSelector with default value"
     asserts:

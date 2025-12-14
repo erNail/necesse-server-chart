@@ -55,27 +55,18 @@ tests:
           path: "metadata.annotations.foo"
           value: "bar"
 
-  - it: "should render data with default values"
-    set:
-      configMap:
-        enabled: true
-    asserts:
-      - equal:
-          path: "data"
-          value: null
-
   - it: "should render data as set"
     set:
       configMap:
         enabled: true
         data:
-          key1: "value1"
-          key2: "value2"
+          settings.cfg: "value1"
+          banned.cfg: "value2"
     asserts:
       - equal:
           path: "data"
           value:
-            key1: |
+            settings.cfg: |
               value1
-            key2: |
+            banned.cfg: |
               value2

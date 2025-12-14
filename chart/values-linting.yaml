@@ -1,20 +1,8 @@
 ---
 replicaCount: 2
 
-autoscaling:
-  enabled: true
-
-volumeConfig:
+persistentVolumeClaims:
   data:
-    persistence:
-      enabled: true
-
-ingress:
-  enabled: true
-
-metrics:
-  enabled: true
-  serviceMonitor:
     enabled: true
 
 podDisruptionBudget:
@@ -25,6 +13,3 @@ hostPodAntiAffinity:
 
 serviceAccount:
   enabled: true
-
-service:
-  enableAdditionalHeadlessService: true

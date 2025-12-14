@@ -1,4 +1,20 @@
 ---
+# General information about the Necesse Server:
+#
+# All server data is stored in `/.config/Necesse/`
+#
+# The main configuration file is `/.config/Necesse/cfg/server.cfg`, which contains sensitive information
+# like the server password.
+# The path can be changed by passing the `-settings` argument to the server executable.
+#
+# Another configuration file is `/.config/Necesse/cfg/settings.cfg`, which contains game settings.
+# I don't know which of these settings are used for the server. I only know that `zipSaves` needs to be set to false,
+# since the zip save always seems to be broken.
+#
+# The world configuration is located at `/.config/Necesse/saves/worlds/<world-name>/worldSettings.cfg`.
+# Usually it's generated automatically when the world is created, but this kind of defeats the purpose.
+# Note that it's stored in a directory equal to the world name, which is set using the `-world` argument.
+
 # -- The api versions of the resources created by this chart.
 #
 # Ref: https://kubernetes.io/docs/reference/using-api/deprecation-guide/
@@ -6,6 +22,7 @@ apiVersions:
   deployment: "apps/v1"
   persistentVolumeClaim: "v1"
   service: "v1"
+  podDisruptionBudget: "policy/v1"
   serviceAccount: "v1"
   configMap: "v1"
   statefulSet: "apps/v1"
@@ -59,11 +76,11 @@ extraPodLabels: {}
 resources:
   requests:
     cpu: "100m"
-    memory: "512Mi"
+    memory: "1024Mi"
     ephemeral-storage: "128Mi"
   limits:
     cpu: "100m"
-    memory: "512Mi"
+    memory: "1024Mi"
     ephemeral-storage: "128Mi"
 
 # -- The security context for the pod.
@@ -138,7 +155,7 @@ strategy:
 # Ref: https://kubernetes.io/docs/concepts/configuration/configmap/
 configMap:
   # -- Whether to create a ConfigMap resource.
-  enabled: true
+  enabled: false
   # -- The name of the ConfigMap.
   # The name should reference the ConfigMap name at `.Values.volumeConfig`.
   name: "config"
@@ -147,240 +164,60 @@ configMap:
   # -- The data to add to the ConfigMap.
   # The `server.cfg` needs to be created as a secret, since it can contain sensitive information like passwords.
   # Check the `examples` directory for an example of an encrypted `server.cfg` Secret.
-  data:
-    settings.cfg: >-
-      SETTINGS = {
-        GENERAL = {
-          sceneSize = 1.25, // [1.0 - 4.0] Higher = more zoomed in
-          adjustZoomOnHighResolution = true,
-          limitCameraToLevelBounds = true,
-          pauseOnFocusLoss = true,
-          savePerformanceOnFocusLoss = true,
-          alwaysSkipTutorial = false,
-          showSettlerHeadArmor = true,
-          useTileObjectHitboxes = false,
-          loadLevelBeforeSpawn = false,
-          smartMining = false,
-          craftingUseNearby = true,
-          minimapHidden = false,
-          menuCameraPan = true,
-          minimapZoomLevel = 3,
-          islandMapZoomLevel = 3,
-          show1p0Notice = true,
-          showSteamDeckCursorNotice = true,
-          patchNotesOpenYear = 2000,
-          patchNotesOpenMonth = 1,
-          patchNotesOpenDay = 1,
-          unloadLevelsCooldown = 30,
-          worldBorderSize = -1,
-          droppedItemsLifeMinutes = 0,
-          unloadSettlements = false,
-          maxSettlementsPerPlayer = -1,
-          maxSettlersPerSettlement = -1,
-          zipSaves = true,
-          language = en
-        },
-        CONTROLS = {
-          cursorJoystickSensitivity = 1.0,
-          mouse1 = -100,
-          mouse2 = -99,
-          moveup = 87,
-          moveleft = 65,
-          movedown = 83,
-          moveright = 68,
-          movetomouse = -1,
-          inventory = 69,
-          healthpotion = 81,
-          manapotion = 90,
-          eatfood = -1,
-          pipette = -98,
-          eraser = 71,
-          scoreboard = 258,
-          showmap = 77,
-          zoomin = 334,
-          zoomout = 333,
-          hidecursor = 292,
-          hideui = 293,
-          screenshot = 294,
-          debuginfo = 290,
-          debughud = 291,
-          buffpotions = 66,
-          placetorch = 82,
-          expressionwheel = 84,
-          usemount = 70,
-          setability = 86,
-          trinketability = 32,
-          openadventureparty = 88,
-          openadventurejournal = 74,
-          opensettlement = 67,
-          smartmining = 341,
-          lootall = -1,
-          sortinventory = -1,
-          quickstack = -1,
-          nexthotbar = -102,
-          prevhotbar = -103,
-          hotbarslot0 = 49,
-          hotbarslot1 = 50,
-          hotbarslot2 = 51,
-          hotbarslot3 = 52,
-          hotbarslot4 = 53,
-          hotbarslot5 = 54,
-          hotbarslot6 = 55,
-          hotbarslot7 = 56,
-          hotbarslot8 = 57,
-          hotbarslot9 = 48,
-          itemset0 = -1,
-          itemset1 = -1,
-          itemset2 = -1,
-          itemset3 = -1,
-          invlock = 342,
-          invquickmove = 340,
-          invtrash = 341,
-          invdrop = -1,
-          craft10 = 340,
-          craftall = -1
-        },
-        INTERFACE = {
-          interfaceSize = 1.0, // [1.0 - 2.0] Higher = bigger
-          interfaceStyle = primal,
-          adjustInterfaceOnHighResolution = true,
-          sharpenInterface = true,
-          pixelFont = false,
-          showDebugInfo = false,
-          showQuestMarkers = true,
-          showTeammateMarkers = true,
-          showPickupText = true,
-          showDamageText = true,
-          showDoTText = true,
-          showMobHealthBars = true,
-          showBossHealthBars = true,
-          showBasicTooltipBackground = false,
-          showItemTooltipBackground = true,
-          showControlTips = true,
-          showLogicGateTooltips = false,
-          showIngredientsAvailable = true,
-          alwaysShowQuickbar = false,
-          tooltipTextSize = 16,
-          drawCursorManually = true,
-          cursorColor = [255, 255, 255, 255],
-          cursorSize = 0,
-          trackNewQuests = true,
-          displayJournalNotifications = true,
-          craftingFilterExpanded = false,
-          craftingListExpanded = true,
-          craftingListShowHidden = false,
-          craftingListOnlyCraftable = false,
-          highlightNewRecipesToWorkstation = true,
-          hideSettlementStorage = false,
-          hideSettlementWorkstations = false,
-          hideSettlementForestryZones = false,
-          hideSettlementHusbandryZones = false,
-          hideSettlementFertilizeZones = false,
-          mapCoordinates = RELATIVE_SELF
-        },
-        SOUND = {
-          masterVolume = 50, // [0 - 100]
-          effectsVolume = 100, // [0 - 100]
-          weatherVolume = 20, // [0 - 100]
-          UIVolume = 100, // [0 - 100]
-          musicVolume = 50, // [0 - 100]
-          muteOnFocusLoss = false
-        },
-        GRAPHICS = {
-          displayMode = Borderless, // Windowed, Borderless, Fullscreen
-          monitor = 0,
-          vSyncEnabled = true,
-          maxFPS = 0, // 0 = uncapped
-          reduceUIFramerate = true,
-          sceneColors = Vibrant, // Normal, Vibrant
-          brightness = 1.0,
-          smoothLighting = true,
-          lights = Color, // Color, White
-          particles = Maximum, // Minimal, Decreased, Maximum
-          wavyGrass = true,
-          denseGrass = true,
-          windeffects = true,
-          cameraShake = true
-        }
-      }
-    banned.cfg: ""
-    auth: ""
+  data: {}
 
-# -- Configures the pods `volumes` and `volumeMounts`, as well as the Persistent Volume Claims
+# -- Volumes configuration
 #
 # Ref: https://kubernetes.io/docs/concepts/storage/volumes/
-volumeConfig:
+volumes:
+  - name: "data"
+    # -- By default, the data volume is not persisted.
+    # To enable persistence, you need to remove `emptyDir`, uncomment the `persistentVolumeClaim` section,
+    # and set `.Values.persistentVolumeClaims.data.enabled` to `true`.
+    emptyDir: {}
+    # persistentVolumeClaim:
+    #  # -- The name of the persistent volume claim to use.
+    #  # This should reference a PVC at `.Values.persistentVolumeClaims`.
+    #  claimName: "data"
+  - name: "server-config"
+    secret:
+      # The name of the secret containing the `server.cfg` file.
+      secretName: "necesse-server-config"
+
+# -- Volume mounts configuration
+# The map will be transformed to an array
+#
+# Ref: https://kubernetes.io/docs/concepts/storage/volumes/#mounting-a-volume-in-a-container
+volumeMounts:
+  - name: "data"
+    mountPath: "/.config/Necesse"
+  - name: "data"
+    mountPath: "/.config/Necesse/cfg"
+    subPath: "cfg"
+  - name: "server-config"
+    mountPath: "/.config/Necesse/cfg/server.cfg"
+    subPath: "server.cfg"
+
+# -- Persistent Volume Claims configuration.
+#
+# Ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims
+persistentVolumeClaims:
   data:
-    # -- Will be added to the pods `volumeMounts`.
-    volumeMount:
-      name: "data"
-      mountPath: "/.config/Necesse"
-    # -- Will be added to the pods `volumes` if `persistence.enabled` is `false`.
-    volume:
-      name: "data"
-      emptyDir: {}
-    # -- Persistent Volume Claim configuration
-    persistence:
-      enabled: false
-      pvcName: "data"
-      annotations: {}
-      accessModes:
-        - "ReadWriteOnce"
-      size: "1Gi"
-      storageClass: ""
-      # -- Will be added to the pods `volumes` if `persistence.enabled` is `true`.
-      volume:
-        name: "data"
-        persistentVolumeClaim:
-          claimName: "data"
-  cfg:
-    # -- Will be added to the pods `volumeMounts`.
-    volumeMount:
-      name: "cfg"
-      mountPath: "/.config/Necesse/cfg"
-    # -- Will be added to the pods `volumes`
-    volume:
-      name: "cfg"
-      emptyDir: {}
-  serverConfig:
-    # -- Will be added to the pods `volumeMounts`.
-    volumeMount:
-      name: "server-config"
-      mountPath: "/.config/Necesse/cfg/server.cfg"
-      subPath: "server.cfg"
-    # -- Will be added to the pods `volumes` if `persistence.enabled` is `false`.
-    volume:
-      name: "server-config"
-      secret:
-        secretName: "necesse-server-config"
-  settingsConfig:
-    # -- Will be added to the pods `volumeMounts`.
-    volumeMount:
-      name: "settings-config"
-      mountPath: "/.config/Necesse/cfg/settings.cfg"
-      subPath: "settings.cfg"
-    # -- Will be added to the pods `volumes`
-    volume:
-      name: "settings-config"
-      configMap:
-        name: "config"
-        items:
-          - key: "settings.cfg"
-            path: "settings.cfg"
-  bannedConfig:
-    # -- Will be added to the pods `volumeMounts`.
-    volumeMount:
-      name: "banned-config"
-      mountPath: "/.config/Necesse/cfg/banned.cfg"
-      subPath: "banned.cfg"
-    # -- Will be added to the pods `volumes`
-    volume:
-      name: "banned-config"
-      configMap:
-        name: "config"
-        items:
-          - key: "banned.cfg"
-            path: "banned.cfg"
+    # -- Whether to enable the Persistent Volume Claim.
+    # Settings this value to `true` will only create the PVC.
+    # You still need to adapt `.Values.volumes` to use the claim.
+    enabled: false
+    # -- The name of the Persistent Volume Claim.
+    pvcName: "data"
+    # -- Annotations to add to the Persistent Volume Claim.
+    annotations: {}
+    # -- The access modes of the Persistent Volume Claim.
+    accessModes:
+      - "ReadWriteOnce"
+    # -- The size of the Persistent Volume Claim.
+    size: "1Gi"
+    # -- The storage class of the Persistent Volume Claim.
+    storageClass: ""
 
 # -- Configuration for service accounts.
 #
@@ -432,27 +269,46 @@ service:
       protocol: "UDP"
       targetPort: "server"
 
+# -- Pod Disruption Budget configuration.
+#
+# Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+podDisruptionBudget:
+  # -- Whether to create a PodDisruptionBudget resource.
+  enabled: false
+  # -- Annotations to add to the PodDisruptionBudget.
+  annotations: {}
+  # -- The minimum number of pods that must be available. If set, maxUnavailable won't be used.
+  minAvailable: 1
+  # -- The maximum number of pods that can be unavailable. Ignored if `minAvailable` is set.
+  maxUnavailable: 1
+  # -- The Unhealthy Pod Eviction Policy.
+  unhealthyPodEvictionPolicy: "AlwaysAllow"
+
 # -- App configuration.
 app:
   # -- Environment variables to pass to the container.
   #
   # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/
   env:
+    # -- The JVM options.
+    # Most of these are recommended by the official Necesse server documentation.
+    # `-Xms` and `-Xmx` should be set according to `.Values.resources`.
     - name: "JAVA_TOOL_OPTIONS"
       value: >-
         -XX:+UnlockExperimentalVMOptions
-        -XX:+UseG1GC 
-        -XX:+ExplicitGCInvokesConcurrent 
-        -XX:G1NewSizePercent=20 
-        -XX:G1ReservePercent=20 
-        -XX:MaxGCPauseMillis=50 
+        -XX:+UseG1GC
+        -XX:+ExplicitGCInvokesConcurrent
+        -XX:G1NewSizePercent=20
+        -XX:G1ReservePercent=20
+        -XX:MaxGCPauseMillis=50
         -XX:G1HeapRegionSize=32M
-        -Xms256m
-        -Xmx256m
-    
+        -Xms256M
+        -Xmx256M
   # -- Arguments to pass to the containers entrypoint.
   #
   # Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/
   args:
     - "-world"
-    - "MyWorld"
+    - "kubeworld"
+    - "-zipsaves"
+    - "0"

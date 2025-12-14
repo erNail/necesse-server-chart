@@ -22,4 +22,4 @@ annotations:
       url: https://github.com/erNail/necesse-server-chart/issues
 version: "0.0.0"
 # renovate: image=ghcr.io/ernail/necesse-server
-appVersion: "1.0.0-rc20197724461"
+appVersion: "1.0.0-rc20441161599"
